@@ -1,8 +1,9 @@
 import { Board } from "./Board";
 import { Piece, Side } from "./Piece";
+import { generateRandomNumberMurmurHash3 } from "./utils/randomGenerator";
 
 export class Generator {
-  static async generateBoard(
+  static generateBoard(
     sizeX: number,
     sizeY: number,
     salt: string,
@@ -13,21 +14,21 @@ export class Generator {
     let board = null;
     while (i < maxAttempts) {
       salt = `${initial_salt}_${i}`;
-      const pieces = await Generator.iterate(sizeX, sizeY, salt, i);
+      const pieces = Generator.iterate(sizeX, sizeY, salt, i);
       if (pieces != null) {
         console.log(i);
-        board = new Board(pieces);
+        board = new Board(pieces, salt);
         if (board.checkSolved()) {
-          console.log("GENERATED");
+          board.shuffle();
           return board;
         }
       }
       i++;
     }
-    return board;
+    return null;
   }
 
-  static async iterate(
+  static iterate(
     sizeX: number,
     sizeY: number,
     salt: string,
@@ -62,7 +63,7 @@ export class Generator {
         if (maxSidesValue < minSidesValue) {
           return null;
         }
-        let randomSide = await Generator.generateRandomNumberMurmurHash3(
+        let randomSide = generateRandomNumberMurmurHash3(
           `${salt}_${x}_${y}_side`,
           minSidesValue,
           maxSidesValue + 1
@@ -88,7 +89,7 @@ export class Generator {
         }
         let randomState =
           validStates[
-            await Generator.generateRandomNumberMurmurHash3(
+            generateRandomNumberMurmurHash3(
               `${salt}_${x}_${y}_state`,
               0,
               validStates.length
@@ -117,81 +118,5 @@ export class Generator {
       return 2;
     if (x == 0 || y == 0 || x == sizeX - 1 || y == sizeY - 1) return 3;
     return 4;
-  }
-
-  static async generateRandomNumberSHA256(
-    salt: string,
-    min: number,
-    max: number
-  ) {
-    const encoder = new TextEncoder();
-    const saltBytes = encoder.encode(salt);
-    const digest = await window.crypto.subtle.digest("SHA-256", saltBytes);
-
-    const hashArray = new Uint8Array(digest);
-    const randomValue = hashArray.reduce((acc, byte) => acc * 256 + byte, 0);
-    const range = max - min;
-    const randomInRange = (randomValue % range) + min;
-    return randomInRange;
-  }
-  private static async generateRandomNumberMurmurHash3(
-    salt: string,
-    min: number,
-    max: number
-  ) {
-    const hash = Generator.murmurHash3(salt);
-    return (hash % (max - min)) + min;
-  }
-  private static murmurHash3(str: string) {
-    var h1 = 0;
-    var len = str.length;
-    var k1 = 0;
-    var i = 0;
-
-    while (len >= 4) {
-      k1 =
-        (str.charCodeAt(i) & 0xff) |
-        ((str.charCodeAt(i + 1) & 0xff) << 8) |
-        ((str.charCodeAt(i + 2) & 0xff) << 16) |
-        ((str.charCodeAt(i + 3) & 0xff) << 24);
-
-      k1 = k1 * 0xcc9e2d51;
-      k1 = (k1 << 15) | (k1 >>> 17);
-      k1 = k1 * 0x1b873593;
-
-      h1 = h1 ^ k1;
-      h1 = (h1 << 13) | (h1 >>> 19);
-      h1 = h1 * 5 + 0xe6546b64;
-
-      i += 4;
-      len -= 4;
-    }
-
-    k1 = 0;
-    switch (len) {
-      case 3:
-        k1 ^= (str.charCodeAt(i + 2) & 0xff) << 16;
-        break;
-      case 2:
-        k1 ^= (str.charCodeAt(i + 1) & 0xff) << 8;
-        break;
-      case 1:
-        k1 ^= str.charCodeAt(i) & 0xff;
-        break;
-    }
-
-    k1 = k1 * 0xcc9e2d51;
-    k1 = (k1 << 15) | (k1 >>> 17);
-    k1 = k1 * 0x1b873593;
-
-    h1 = h1 ^ k1;
-    h1 = h1 ^ str.length;
-    h1 = h1 ^ (h1 >>> 16);
-    h1 = h1 * 0x85ebca6b;
-    h1 = h1 ^ (h1 >>> 13);
-    h1 = h1 * 0xc2b2ae35;
-    h1 = h1 ^ (h1 >>> 16);
-
-    return h1 >>> 0; // Ensure it's a positive integer
   }
 }

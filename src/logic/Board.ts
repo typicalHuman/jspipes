@@ -1,10 +1,9 @@
 import { Side, type Piece } from "./Piece";
-
-const MAX_FIELD_SIZE_X = 30;
-const MAX_FIELD_SIZE_Y = 15;
+import { MAX_FIELD_SIZE_X, MAX_FIELD_SIZE_Y } from "./utils/constants";
+import { generateRandomNumberMurmurHash3 } from "./utils/randomGenerator";
 
 export class Board {
-  constructor(public pieces: Piece[][]) {
+  constructor(public pieces: Piece[][], public salt: string) {
     const [y, x] = [pieces.length, pieces[0].length];
     if (y == 0 || y > MAX_FIELD_SIZE_Y) {
       throw new Error("Invalid size Y");
@@ -24,6 +23,18 @@ export class Board {
       }
     }
     return true;
+  }
+
+  shuffle() {
+    for (let i = 0; i < this.pieces.length; i++) {
+      for (let j = 0; j < this.pieces[i].length; j++) {
+        this.pieces[i][j].state = generateRandomNumberMurmurHash3(
+          `${this.salt}_shuffle_${i}_${j}`,
+          0,
+          4
+        );
+      }
+    }
   }
 
   private checkPieceConnected(piece: Piece): boolean {

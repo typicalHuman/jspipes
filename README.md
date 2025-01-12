@@ -1,5 +1,11 @@
-# Vue 3 + TypeScript + Vite
+# JSPipes
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Pipe connection game with procedural generation written in JavaScript, inspired by this [game](https://play.google.com/store/apps/details?id=com.balysv.loop&hl=en). The procedural generation is done using a simple hashing algorithm - [MurmurHash3](https://en.wikipedia.org/wiki/MurmurHash).
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+- Ability to change the field size
+
+![screenshot_1](public/screenshot_1.png)
+
+- Ability to randomize colors
+
+![screenshot_2](public/screenshot_2.png)
